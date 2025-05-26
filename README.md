@@ -106,3 +106,136 @@ Os logs acumulam todas as saídas das execuções anteriores do container.
 - O comando `CMD` define o que o container executa ao iniciar.
 - Nomear containers facilita gerenciá-los depois.
 - Logs acumulam saídas de todas execuções do container.
+
+---
+
+## Exercício 2
+
+### Objetivo
+
+- Criar um arquivo `Dockerfile` que utilize a imagem base `ubuntu:22.04`.
+- Instalar o servidor web **Nginx** dentro do container.
+- Copiar um arquivo `index.html` personalizado para o diretório padrão do Nginx.
+- Expor a porta 80 para acesso externo.
+- Construir uma imagem Docker com o nome `siteteste`.
+- Executar um container a partir dessa imagem e acessar o site pelo navegador.
+
+---
+
+### O que foi criado
+
+#### 1. index.html
+
+Arquivo HTML personalizado com visual moderno e responsivo:
+
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minha Página Profissional</title>
+    <style>
+      /* ... (código CSS completo, igual ao fornecido acima) ... */
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>MeuSite</h1>
+      <nav>
+        <a href="#">Início</a>
+        <a href="#">Sobre</a>
+        <a href="#">Contato</a>
+      </nav>
+    </header>
+    <section class="hero">
+      <h2>Seja Bem-vindo!</h2>
+      <p>
+        Esta é uma página moderna hospedada em Linux, com um visual incrível e
+        responsivo.
+      </p>
+      <a href="#" class="button">Saiba Mais</a>
+    </section>
+  </body>
+</html>
+```
+
+> **Obs:** O arquivo `index.html` deve estar no mesmo diretório do `Dockerfile`.
+
+---
+
+#### 2. Dockerfile
+
+Arquivo responsável por construir a imagem personalizada com Nginx e o HTML customizado:
+
+```Dockerfile
+FROM ubuntu:22.04
+
+RUN apt-get update && \
+    apt-get install -y nginx && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY index.html /var/www/html/index.html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+- `FROM ubuntu:22.04`: Usa Ubuntu como base.
+- `RUN apt-get install -y nginx`: Instala o servidor web Nginx.
+- `COPY index.html /var/www/html/index.html`: Copia o arquivo HTML para o local padrão do Nginx.
+- `EXPOSE 80`: Indica que o container usará a porta 80.
+- `CMD ["nginx", "-g", "daemon off;"]`: Inicia o Nginx em primeiro plano ao rodar o container.
+
+---
+
+#### 3. Construção da imagem
+
+Para criar a imagem Docker:
+
+```bash
+docker build -t siteteste .
+```
+
+---
+
+#### 4. Execução do container
+
+Para rodar o container e expor a porta 80:
+
+```bash
+docker run --name siteteste -p 80:80 -d siteteste
+```
+
+- `--name siteteste`: nome do container.
+- `-p 80:80`: mapeia a porta 80 do host para a porta 80 do container.
+- `-d`: executa em modo "detached" (em segundo plano).
+
+---
+
+#### 5. Acessando o site
+
+Abra o navegador e acesse:  
+[http://localhost](http://localhost)
+
+Você verá sua página HTML personalizada servida via Nginx dentro do seu container Docker.
+
+---
+
+### Conceitos importantes
+
+- **Imagem base Ubuntu:** permite instalar pacotes via apt-get, como o Nginx.
+- **Nginx:** servidor web popular e leve.
+- **docker build/run:** comandos para criar e executar containers.
+- **Mapeamento de portas:** necessário para acessar o serviço de dentro do container.
+
+---
+
+### Observações finais
+
+- Sempre que modificar o `index.html`, é necessário reconstruir a imagem com `docker build`.
+- Se já existir um container com o nome `siteteste`, remova-o com `docker rm -f siteteste` antes de rodar novamente.
+- O comando `EXPOSE` no Dockerfile documenta a porta, mas o mapeamento real é feito com `-p` no `docker run`.
+
+---
