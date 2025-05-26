@@ -239,3 +239,45 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 - O comando `EXPOSE` no Dockerfile documenta a porta, mas o mapeamento real é feito com `-p` no `docker run`.
 
 ---
+
+## Exercício 3
+
+### Objetivo
+
+- Iniciar um container Ubuntu com terminal interativo
+- Navegar pelo sistema de arquivos
+- Instalar o pacote `curl` usando `apt`
+
+### Passos realizados
+
+1. **Iniciar um container Ubuntu interativo:**
+
+   ```bash
+   docker run -it --name ubuntu-test ubuntu:22.04 bash
+   ```
+
+2. **No terminal do container, atualizar pacotes:**
+
+   ```bash
+   apt-get update
+   ```
+
+3. **Instalar curl:**
+
+   ```bash
+   apt-get install -y curl
+   ```
+
+4. **Testar:**
+
+   ```bash
+   curl https://www.google.com
+   ```
+
+   Saída esperada (exemplo do início do HTML):
+
+   ```
+   <!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="pt-BR"><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><meta content="/images/branding/googleg/1x/googleg_standard_color_128dp.png" itemprop="image"><title>Google</title>...
+   ```
+
+---
