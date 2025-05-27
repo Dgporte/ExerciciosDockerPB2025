@@ -4,7 +4,7 @@ Esta lista de exercícios propõe desafios práticos para aprender e reforçar c
 
 ---
 
-## Exercícios 1
+## Exercício 1
 
 ### Objetivo
 
@@ -282,7 +282,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 3
+## Exercício 4
 
 ### Objetivo
 
@@ -429,5 +429,94 @@ docker-compose up -d
 - **Volume nomeado:** Armazena dados fora do ciclo de vida do container, garantindo persistência.
 - **Persistência:** Dados dos bancos MySQL permanecem mesmo após o container ser parado, iniciado ou removido (desde que o volume não seja excluído).
 - **MYSQL_DATABASE:** Permite criar um banco de dados inicial ao subir o container.
+
+---
+
+## Exercício 5
+
+### Objetivo
+
+- Criar um `Dockerfile` baseado na imagem `alpine`
+- Definir uma variável de ambiente chamada `MEU_NOME`
+- Imprimir o valor da variável utilizando `echo` ao executar o container
+
+---
+
+## 1. Dockerfile
+
+O arquivo `Dockerfile` utilizado:
+
+```Dockerfile
+FROM alpine:3.21.3
+ENV MEU_NOME=Diogo
+CMD ["sh", "-c", "echo $MEU_NOME"]
+```
+
+- `FROM alpine:3.21.3`: Usa a imagem Alpine como base.
+- `ENV MEU_NOME=Diogo`: Define a variável de ambiente `MEU_NOME` com o valor desejado.
+- `CMD ["sh", "-c", "echo $MEU_NOME"]`: Ao iniciar o container, executa o comando que imprime o valor da variável.
+
+---
+
+## 2. Construindo a Imagem
+
+Execute o comando abaixo para construir a imagem com o nome `meunome`:
+
+```bash
+docker build -t meunome .
+```
+
+Saída esperada (resumida):
+
+```
+...
+ => => naming to docker.io/library/meunome:latest
+...
+```
+
+---
+
+## 3. Executando o Container
+
+Para executar o container e imprimir o valor da variável de ambiente:
+
+```bash
+docker run meunome
+```
+
+Saída esperada:
+
+```
+Diogo
+```
+
+---
+
+## 4. Explicação Rápida
+
+- **Variáveis de Ambiente (`ENV`)**: São amplamente usadas em containers Docker para parametrizar aplicações e comandos sem alterar o código fonte.
+- **CMD com `sh -c`**: Permite que o comando do container interprete variáveis de ambiente e comandos compostos via shell.
+
+---
+
+## 5. Alterando o Valor da Variável (Opcional)
+
+Se desejar passar o valor da variável em tempo de execução (sobrescrevendo o valor do Dockerfile):
+
+```bash
+docker run -e MEU_NOME=OutroNome meunome
+```
+
+Saída:
+
+```
+OutroNome
+```
+
+---
+
+## Resumo
+
+Com esses passos, você criou e executou um container Docker que utiliza uma variável de ambiente para exibir um valor personalizado ao ser iniciado. Isso é útil para configurar containers de maneira flexível e padronizada.
 
 ---
