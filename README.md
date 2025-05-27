@@ -520,3 +520,100 @@ OutroNome
 Com esses passos, você criou e executou um container Docker que utiliza uma variável de ambiente para exibir um valor personalizado ao ser iniciado. Isso é útil para configurar containers de maneira flexível e padronizada.
 
 ---
+
+## Exercício 6
+
+### Objetivo
+
+- Utilizar um **multi-stage build** para otimizar a imagem Docker de uma aplicação Go, deixando a imagem final o menor possível.
+- Praticar o conceito de multi-stage utilizando o projeto [GS PING (docker-gs-ping)](https://github.com/docker/docker-gs-ping).
+
+---
+
+### O que foi criado
+
+#### 1. Dockerfile Multi-Stage
+
+Criei um `Dockerfile` utilizando o conceito de multi-stage build. O arquivo está a seguir:
+
+```Dockerfile
+FROM golang:1.19 AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY *.go ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o docker-gs-ping
+
+FROM scratch
+
+WORKDIR /
+COPY --from=builder /app/docker-gs-ping /docker-gs-ping
+
+EXPOSE 8080
+
+CMD ["/docker-gs-ping"]
+```
+
+---
+
+#### 2. Explicação do Dockerfile
+
+- **Primeira etapa (`builder`):**
+
+  - Utiliza a imagem oficial do Go (versão 1.19) para compilar o binário da aplicação.
+  - Copia arquivos de dependência e código-fonte para dentro da imagem.
+  - Baixa as dependências com `go mod download`.
+  - Compila o binário estático para Linux, armazenando-o como `docker-gs-ping`.
+
+- **Segunda etapa (`scratch`):**
+  - Utiliza a imagem `scratch` (completamente vazia) para garantir que a imagem final seja a menor possível.
+  - Só copia o binário já compilado da etapa anterior.
+  - Expõe a porta `8080` (padrão do GS Ping).
+  - Define o comando padrão para executar o binário.
+
+**Dessa forma, a imagem final contém apenas o necessário para rodar a aplicação, sem nenhum arquivo ou biblioteca extra.**
+
+---
+
+#### 3. Construindo e Executando a Imagem
+
+**Para construir a imagem:**
+
+```bash
+docker build -t gs-ping-multi .
+```
+
+**Para executar o container:**
+
+```bash
+docker run -p 8080:8080 gs-ping-multi
+```
+
+A aplicação estará acessível na porta 8080.
+
+---
+
+#### 4. Verificação do Resultado
+
+- Após o build, a imagem gerada tem cerca de **12MB**, comprovando que o multi-stage build foi bem utilizado para otimização.
+- O container roda apenas o binário da aplicação, tornando-o mais seguro, leve e fácil de distribuir.
+
+---
+
+### Conceitos Praticados
+
+- **Multi-stage build:** Técnica que permite usar várias imagens base em etapas separadas do Dockerfile, otimizando o build e reduzindo o tamanho da imagem final.
+- **Imagem scratch:** Usada para criar imagens finais mínimas, sem qualquer sistema operacional ou dependência, contendo apenas o binário necessário.
+- **Redução de superfície de ataque:** Menos arquivos e dependências na imagem significam menos riscos de segurança.
+- **Melhor desempenho:** Imagens menores são mais rápidas para baixar, enviar e iniciar.
+
+---
+
+### Observações Finais
+
+- O multi-stage build é essencial em aplicações compiladas (como Go) para separar o ambiente de build do ambiente de execução.
+- É importante **criar o próprio Dockerfile multi-stage** para demonstrar domínio do conceito, ao invés de apenas copiar exemplos prontos.
+- Caso queira rodar testes durante o build, pode adicionar um estágio intermediário para isso, mas o foco do exercício é a otimização da imagem final.
+
+---
