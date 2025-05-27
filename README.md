@@ -281,3 +281,153 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
    ```
 
 ---
+
+## Exercício 3
+
+### Objetivo
+
+- Subir um container MySQL utilizando a imagem `mysql:5.7`
+- Utilizar um volume nomeado para armazenar os dados do banco
+- Criar bancos de dados no MySQL
+- Parar e iniciar novamente o container
+- Verificar se os dados persistem após reiniciar
+
+---
+
+## Passo a Passo
+
+### 1. Crie um volume nomeado
+
+Esse volume armazenará os dados do MySQL fora do ciclo de vida do container.
+
+```bash
+docker volume create mysql_data
+```
+
+---
+
+### 2. Suba o container MySQL com o volume nomeado
+
+```bash
+docker run -d \
+  --name mysql-container \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=teste \
+  -v mysql_data:/var/lib/mysql \
+  -p 3306:3306 \
+  mysql:5.7
+```
+
+- `-v mysql_data:/var/lib/mysql`: Usa o volume nomeado `mysql_data` para persistir os dados.
+- `-e MYSQL_DATABASE=teste`: Cria automaticamente o banco de dados chamado `teste`.
+- `-e MYSQL_ROOT_PASSWORD=root`: Define a senha do root como `root`.
+- `-p 3306:3306`: Expõe a porta padrão do MySQL.
+
+---
+
+### 3. Acesse o MySQL e crie outro banco
+
+Entre no terminal do banco e crie um banco chamado `persistencia`:
+
+```bash
+docker exec -it mysql-container mysql -u root -p
+# digite 'root' como senha quando solicitado
+```
+
+No prompt do MySQL, execute:
+
+```sql
+CREATE DATABASE persistencia;
+SHOW DATABASES;
+EXIT;
+```
+
+---
+
+### 4. Pare e inicie o container novamente
+
+```bash
+docker stop mysql-container
+docker start mysql-container
+```
+
+---
+
+### 5. Verifique a persistência dos bancos de dados
+
+Acesse novamente o MySQL:
+
+```bash
+docker exec -it mysql-container mysql -u root -p
+# digite 'root' como senha
+```
+
+E liste os bancos:
+
+```sql
+SHOW DATABASES;
+```
+
+Você deverá ver, entre outros:
+
+```
+information_schema
+mysql
+performance_schema
+persistencia
+teste
+```
+
+O banco `persistencia` e o banco `teste` permanecem disponíveis, mostrando que os dados foram persistidos com sucesso graças ao volume nomeado.
+
+---
+
+## Observações
+
+- O volume nomeado (`mysql_data`) mantém os dados mesmo que o container seja removido. Só será perdido se o volume for explicitamente removido com `docker volume rm`.
+- Para remover tudo: primeiro remova o container, depois o volume.
+
+```bash
+docker rm -f mysql-container
+docker volume rm mysql_data
+```
+
+---
+
+## Dica: Usando docker-compose
+
+Se preferir, pode criar um arquivo `docker-compose.yml` para automatizar o processo:
+
+```yaml
+version: "3.8"
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: teste
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+```
+
+Para subir:
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## Conceitos Importantes
+
+- **Volume nomeado:** Armazena dados fora do ciclo de vida do container, garantindo persistência.
+- **Persistência:** Dados dos bancos MySQL permanecem mesmo após o container ser parado, iniciado ou removido (desde que o volume não seja excluído).
+- **MYSQL_DATABASE:** Permite criar um banco de dados inicial ao subir o container.
+
+---
