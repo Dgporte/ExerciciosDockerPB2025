@@ -882,3 +882,197 @@ A conexão foi realizada com sucesso, confirmando que o banco de dados estava op
 - **Segurança:** Nunca exponha suas credenciais reais em repositórios públicos.
 
 ---
+
+## Exercício 9
+
+### Objetivo
+
+- Servir uma landing page estática utilizando o Nginx em um container Docker.
+- Utilizar a imagem oficial `nginx:alpine` para uma solução leve e produtiva.
+- Organizar os arquivos HTML, CSS, JS do site na pasta `pages/` do projeto.
+- Garantir que o arquivo principal `index.html` seja exibido diretamente ao acessar a raiz do site.
+
+---
+
+### Estrutura do Projeto
+
+```
+exercicio9/
+├── Dockerfile
+├── pages/
+│   ├── index.html
+│   └── [outros arquivos e pastas do site]
+```
+
+---
+
+### Dockerfile utilizado
+
+```Dockerfile
+FROM nginx:alpine
+COPY pages/ /usr/share/nginx/html/
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+- `FROM nginx:alpine`: Usa a imagem oficial do Nginx baseada em Alpine Linux (leve e eficiente).
+- `COPY pages/ /usr/share/nginx/html/`: Copia todo o conteúdo da pasta `pages/` do projeto para o diretório padrão de arquivos estáticos do Nginx.
+- `EXPOSE 80`: Expõe a porta 80 para acesso externo.
+- `CMD ["nginx", "-g", "daemon off;"]`: Mantém o Nginx rodando em primeiro plano.
+
+---
+
+### Passos para execução
+
+1. **Monte a imagem Docker:**
+
+   ```bash
+   docker build -t material-kit-landing .
+   ```
+
+2. **Remova qualquer container antigo com o mesmo nome (caso exista):**
+
+   ```bash
+   docker rm -f material-kit
+   ```
+
+3. **Rode o novo container:**
+
+   ```bash
+   docker run --name material-kit -p 8080:80 -d material-kit-landing
+   ```
+
+4. **Acesse a landing page:**
+   Abra o navegador e acesse [http://localhost:8080](http://localhost:8080)
+
+---
+
+### Observações Importantes
+
+- O **arquivo principal precisa se chamar `index.html`** e estar dentro da pasta `pages/` para ser servido na raiz do site.
+- Se alterar arquivos da pasta `pages/`, **reconstrua a imagem** antes de rodar novamente.
+- Para ver os arquivos que foram copiados para o container, use:
+  ```bash
+  docker exec -it material-kit ls /usr/share/nginx/html
+  ```
+
+---
+
+### Créditos
+
+Landing page baseada em [Material Kit by Creative Tim](https://www.creative-tim.com/product/material-kit).
+
+---
+
+## Exercício 10
+
+### Objetivo
+
+- Demonstrar como rodar containers Docker de forma mais segura, evitando o uso do usuário root.
+- Criar um Dockerfile para uma aplicação Node.js simples (servidor HTTP) e configurá-lo para rodar com um usuário não-root.
+- Construir a imagem, iniciar o container e verificar que o processo está rodando com o novo usuário.
+
+---
+
+### O que foi criado
+
+#### 1. app.js
+
+Pequeno servidor HTTP em Node.js:
+
+```javascript
+const http = require("http");
+
+const PORT = 3000;
+
+http
+  .createServer((req, res) => {
+    res.end("Rodando como usuário não-root no Docker!\n");
+  })
+  .listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+```
+
+---
+
+#### 2. Dockerfile
+
+Arquivo responsável por criar a imagem Docker com Node.js rodando como usuário não-root:
+
+```Dockerfile
+FROM node:20-alpine
+
+# Cria usuário e grupo sem privilégios
+RUN adduser -D appuser
+
+# Cria diretório de trabalho e copia a aplicação
+WORKDIR /app
+COPY app.js .
+
+# Altera permissões do diretório para o usuário criado
+RUN chown -R appuser:appuser /app
+
+# Define usuário não-root como padrão
+USER appuser
+
+EXPOSE 3000
+
+CMD ["node", "app.js"]
+```
+
+---
+
+### Passos para execução
+
+1. **Construa a imagem Docker:**
+
+   ```bash
+   docker build -t node-nonroot .
+   ```
+
+2. **Rode o container:**
+
+   ```bash
+   docker run -d --name node-nonroot-demo -p 3000:3000 node-nonroot
+   ```
+
+3. **Verifique o usuário dentro do container:**
+
+   ```bash
+   docker exec node-nonroot-demo whoami
+   ```
+
+   Saída esperada:
+
+   ```
+   appuser
+   ```
+
+4. **Testar a aplicação:**
+   Abra o navegador e acesse [http://localhost:3000](http://localhost:3000)  
+   ou use:
+   ```bash
+   curl http://localhost:3000
+   ```
+   Saída esperada:
+   ```
+   Rodando como usuário não-root no Docker!
+   ```
+
+---
+
+### Conceitos importantes
+
+- **USER:** A instrução USER no Dockerfile garante que a aplicação não rode como root, aumentando a segurança.
+- **adduser:** Utilizado para criar um usuário sem privilégios no Alpine Linux.
+- **chown:** Garante que o diretório da aplicação pertença ao novo usuário.
+- **EXPOSE:** Documenta a porta usada pela aplicação.
+- **Verificação com `whoami`:** Confirma que o processo do container está rodando como o novo usuário.
+
+---
+
+### Observações finais
+
+- É uma boa prática sempre rodar aplicações em containers Docker utilizando usuários não-root para reduzir riscos de segurança.
+- O mesmo conceito pode ser aplicado a outros tipos de aplicação (Python, Go, etc.), bastando ajustar o Dockerfile conforme necessário.
