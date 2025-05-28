@@ -617,3 +617,268 @@ A aplicação estará acessível na porta 8080.
 - Caso queira rodar testes durante o build, pode adicionar um estágio intermediário para isso, mas o foco do exercício é a otimização da imagem final.
 
 ---
+
+## Exercício 7
+
+### Objetivo
+
+- Criar um ambiente completo utilizando **Docker Compose** para uma aplicação **fullstack** composta por React (frontend), Express (backend) e MongoDB (banco de dados).
+- Aprender a orquestrar múltiplos containers, configurar redes, persistir dados e realizar a conexão entre os serviços.
+- Explorar o conceito de desenvolvimento desacoplado e de ambientes reproduzíveis em qualquer máquina.
+
+---
+
+### O que foi criado
+
+#### 1. Estrutura de Pastas
+
+O projeto foi organizado da seguinte maneira:
+
+```
+react-express-mongodb/
+├── docker-compose.yml
+├── frontend/
+│   ├── Dockerfile
+│   └── ... (código React)
+├── backend/
+│   ├── Dockerfile
+│   └── ... (código Express)
+```
+
+#### 2. docker-compose.yml
+
+Arquivo responsável por definir e orquestrar os três serviços: frontend (React), backend (Express) e banco MongoDB.
+
+```yaml
+services:
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/meubanco
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+```
+
+- **frontend:** Serviço React, exposto na porta 3000, com código sincronizado via volume.
+- **backend:** Serviço Express, exposto na porta 5001 (aplicação interna roda na 5000), recebe a string de conexão do MongoDB via variável de ambiente.
+- **mongo:** Banco de dados MongoDB, armazena dados em volume para garantir persistência.
+
+#### 3. Dockerfile do Frontend
+
+```Dockerfile
+FROM node:18
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+#### 4. Dockerfile do Backend
+
+```Dockerfile
+FROM node:18
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5000
+CMD ["npm", "run", "dev"]
+```
+
+---
+
+### Como executar
+
+1. **Entre na pasta do projeto** (onde está o `docker-compose.yml`):
+
+   ```bash
+   cd react-express-mongodb
+   ```
+
+2. **Suba os serviços:**
+
+   ```bash
+   docker compose up --build
+   ```
+
+   > Caso a porta 5000 já esteja em uso, altere o mapeamento para outra porta no `docker-compose.yml` (exemplo: `"5001:5000"`).
+
+3. **Acesse as aplicações:**
+   - Frontend (React): [http://localhost:3000](http://localhost:3000)
+   - Backend (Express): [http://localhost:5001](http://localhost:5001)
+   - MongoDB: [localhost:27017](mongodb://localhost:27017) (use um cliente como Compass)
+
+---
+
+### Explicação dos principais conceitos
+
+- **Docker Compose:** Ferramenta para orquestrar múltiplos containers de forma fácil, usando um único arquivo de configuração.
+- **Volumes:** Garante que alterações feitas no código do host sejam refletidas no container e que dados importantes (como do banco de dados) sejam persistidos.
+- **networks/depends_on:** Permitem controlar a ordem de inicialização e a comunicação entre serviços.
+- **Ambiente reproduzível:** Todos os serviços podem ser iniciados em qualquer máquina apenas com Docker instalado, sem necessidade de configurar dependências manualmente.
+
+---
+
+### Observações finais
+
+- Esse exercício mostra na prática como rodar uma stack moderna de desenvolvimento de forma isolada, facilitando o desenvolvimento em equipe e o deploy.
+- Caso queira adicionar testes, variáveis de ambiente, ou rodar em produção, é possível estender o arquivo `docker-compose.yml` conforme a necessidade.
+- Lembre-se de sempre remover containers e volumes antigos para evitar conflitos de portas e dados desatualizados.
+
+---
+
+## Exercício 8
+
+### Objetivo
+
+- Utilizar o **Docker Compose** para configurar uma aplicação com um banco de dados **PostgreSQL**.
+- Integrar a ferramenta **pgAdmin** para gerenciamento visual do banco de dados.
+
+---
+
+### O que foi criado
+
+#### 1. Arquivo `.env`
+
+Para facilitar a configuração e manter as credenciais seguras, utilize um arquivo `.env` no mesmo diretório do `docker-compose.yml`. Exemplo de conteúdo:
+
+```
+POSTGRES_USER=yourUser
+POSTGRES_PW=changeit
+POSTGRES_DB=postgres
+PGADMIN_MAIL=your@email.com
+PGADMIN_PW=changeit
+```
+
+---
+
+#### 2. Arquivo `docker-compose.yml`
+
+O arquivo que orquestra os serviços do PostgreSQL e do pgAdmin, garantindo persistência dos dados através de volumes nomeados e o uso das variáveis de ambiente definidas acima:
+
+```yaml
+version: "3.8"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+    ports:
+      - "5050:80"
+    restart: always
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+```
+
+---
+
+### Como executar
+
+1. **Certifique-se de ter o arquivo `.env` na mesma pasta do `docker-compose.yml`** com os valores desejados para usuário e senha do banco e do pgAdmin.
+
+2. **Suba os serviços** com o comando:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Acesse o pgAdmin** no navegador:
+
+   ```
+   http://localhost:5050
+   ```
+
+   Use o e-mail e a senha definidos no seu `.env` para fazer login.
+
+4. **Adicione o servidor PostgreSQL no pgAdmin:**
+   - Clique em "Add New Server".
+   - Em "General", escolha um nome para o servidor.
+   - Em "Connection":
+     - **Host:** `postgres`
+     - **Port:** `5432`
+     - **Username:** igual ao `POSTGRES_USER`
+     - **Password:** igual ao `POSTGRES_PW`
+   - Salve e acesse seu banco de dados!
+
+---
+
+### Testando a conexão com DBeaver
+
+Após subir os containers, utilizei o [DBeaver](https://dbeaver.io/) para testar a conexão com o banco de dados PostgreSQL. Os parâmetros utilizados para a conexão foram:
+
+- **Host:** `localhost` (ou `127.0.0.1`)
+- **Porta:** `5432`
+- **Database:** o valor de `POSTGRES_DB` definido no `.env`
+- **Usuário:** o valor de `POSTGRES_USER` definido no `.env`
+- **Senha:** o valor de `POSTGRES_PW` definido no `.env`
+
+A conexão foi realizada com sucesso, confirmando que o banco de dados estava operacional e acessível externamente.
+
+---
+
+### Conceitos Praticados
+
+- **Docker Compose:** Orquestra múltiplos containers de forma simples e reproduzível.
+- **Volumes nomeados:** Garantem a persistência dos dados do PostgreSQL e das configurações do pgAdmin mesmo após containers serem removidos.
+- **Variáveis de ambiente:** Facilitam a configuração e evitam expor senhas diretamente no arquivo `docker-compose.yml`.
+- **Gerenciamento visual:** O pgAdmin oferece uma interface gráfica amigável para administração do banco PostgreSQL.
+- **Teste com DBeaver:** Demonstrou que o banco está acessível e funcional por outras ferramentas clientes.
+
+---
+
+### Observações Finais
+
+- **Persistência:** A remoção dos containers não apaga os dados do banco ou as configurações do pgAdmin, pois estão salvos nos volumes.
+- **Praticidade:** Com poucos comandos, você tem um ambiente completo para desenvolvimento e testes com PostgreSQL.
+- **Segurança:** Nunca exponha suas credenciais reais em repositórios públicos.
+
+---
