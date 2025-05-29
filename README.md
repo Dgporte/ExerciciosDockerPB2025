@@ -6,23 +6,23 @@ Esta lista de exercícios propõe desafios práticos para aprender e reforçar c
 
 ## Índice
 
-- [Exercício 1 – Olá, Docker! com Alpine](#exercício-1--olá-docker-com-alpine)
-- [Exercício 2 – Servindo Página HTML com Nginx no Ubuntu](#exercício-2--servindo-página-html-com-nginx-no-ubuntu)
-- [Exercício 3 – Terminal Interativo e Instalação de Pacotes](#exercício-3--terminal-interativo-e-instalação-de-pacotes)
-- [Exercício 4 – Persistência de Dados com MySQL e Volumes](#exercício-4--persistência-de-dados-com-mysql-e-volumes)
-- [Exercício 5 – Variáveis de Ambiente no Container](#exercício-5--variáveis-de-ambiente-no-container)
-- [Exercício 6 – Multi-Stage Build com Go (GS Ping)](#exercício-6--multi-stage-build-com-go-gs-ping)
-- [Exercício 7 – Docker Compose para Stack Fullstack (React, Express, MongoDB)](#exercício-7--docker-compose-para-stack-fullstack-react-express-mongodb)
-- [Exercício 8 – PostgreSQL e pgAdmin com Docker Compose](#exercício-8--postgresql-e-pgadmin-com-docker-compose)
-- [Exercício 9 – Landing Page Estática com Nginx](#exercício-9--landing-page-estática-com-nginx)
-- [Exercício 10 – Rodando como Usuário Não-Root no Node.js](#exercício-10--rodando-como-usuário-não-root-no-nodejs)
+- [Exercício 1](#exercício-1)
+- [Exercício 2](#exercício-2)
+- [Exercício 3](#exercício-3)
+- [Exercício 4](#exercício-4)
+- [Exercício 5](#exercício-5)
+- [Exercício 6](#exercício-6)
+- [Exercício 7](#exercício-7)
+- [Exercício 8](#exercício-8)
+- [Exercício 9](#exercício-9)
+- [Exercício 10](#exercício-10)
 - [Exercício 11 – Análise de Vulnerabilidades com Trivy](#exercício-11--análise-de-vulnerabilidades-com-trivy)
 - [Exercício 12 – Melhoria de Dockerfile: Imagem Segura e Enxuta](#exercício-12--melhoria-de-dockerfile-imagem-segura-e-enxuta)
 - [Exercício 13 – Publicando Imagem Python no Docker Hub](#exercício-13--publicando-imagem-python-no-docker-hub)
 
 ---
 
-## Exercício 1 – Olá, Docker! com Alpine
+## Exercício 1
 
 ### Objetivo
 
@@ -36,7 +36,7 @@ Esta lista de exercícios propõe desafios práticos para aprender e reforçar c
 
 ### O que foi criado
 
-#### 1. Dockerfile
+### 1. Dockerfile
 
 Arquivo que define a imagem Docker personalizada:
 
@@ -50,7 +50,7 @@ CMD echo "Olá, Docker!"
 
 ---
 
-#### 2. Construção da imagem
+### 2. Construção da imagem
 
 Para criar a imagem, execute o comando:
 
@@ -63,7 +63,7 @@ docker build -t meu-echo .
 
 ---
 
-#### 3. Execução do container
+### 3. Execução do container
 
 Para criar e executar um container a partir da imagem:
 
@@ -83,7 +83,7 @@ Olá, Docker!
 
 ---
 
-#### 4. Reiniciar o container
+### 4. Reiniciar o container
 
 Para executar o container novamente, use:
 
@@ -95,7 +95,7 @@ Isso reexecuta o container, imprimindo a mensagem outra vez.
 
 ---
 
-#### 5. Verificar logs do container
+### 5. Verificar logs do container
 
 Para ver as mensagens impressas pelo container:
 
@@ -127,7 +127,7 @@ Os logs acumulam todas as saídas das execuções anteriores do container.
 
 ---
 
-## Exercício 2 – Servindo Página HTML com Nginx no Ubuntu
+## Exercício 2
 
 ### Objetivo
 
@@ -258,7 +258,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 3 – Terminal Interativo e Instalação de Pacotes
+## Exercício 3
 
 ### Objetivo
 
@@ -300,7 +300,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 4 – Persistência de Dados com MySQL e Volumes
+## Exercício 4
 
 ### Objetivo
 
@@ -454,92 +454,35 @@ docker-compose up -d
 
 ### Objetivo
 
-- Criar um `Dockerfile` baseado na imagem `alpine`
-- Definir uma variável de ambiente chamada `MEU_NOME`
-- Imprimir o valor da variável utilizando `echo` ao executar o container
+- Criar um Dockerfile baseado na imagem Alpine.
+- Executar o container passando uma variável de ambiente chamada `MEU_NOME` com seu nome.
+- Imprimir o valor da variável utilizando `echo`.
 
 ---
 
-## 1. Dockerfile
-
-O arquivo `Dockerfile` utilizado:
+### Dockerfile
 
 ```Dockerfile
 FROM alpine:3.21.3
-ENV MEU_NOME=Diogo
 CMD ["sh", "-c", "echo $MEU_NOME"]
 ```
 
-- `FROM alpine:3.21.3`: Usa a imagem Alpine como base.
-- `ENV MEU_NOME=Diogo`: Define a variável de ambiente `MEU_NOME` com o valor desejado.
-- `CMD ["sh", "-c", "echo $MEU_NOME"]`: Ao iniciar o container, executa o comando que imprime o valor da variável.
-
----
-
-## 2. Construindo a Imagem
-
-Execute o comando abaixo para construir a imagem com o nome `meunome`:
+### Build e execução
 
 ```bash
 docker build -t meunome .
-```
-
-Saída esperada (resumida):
-
-```
-...
- => => naming to docker.io/library/meunome:latest
-...
-```
-
----
-
-## 3. Executando o Container
-
-Para executar o container e imprimir o valor da variável de ambiente:
-
-```bash
-docker run meunome
+docker run -e MEU_NOME=SeuNome meunome
 ```
 
 Saída esperada:
 
 ```
-Diogo
+SeuNome
 ```
 
 ---
 
-## 4. Explicação Rápida
-
-- **Variáveis de Ambiente (`ENV`)**: São amplamente usadas em containers Docker para parametrizar aplicações e comandos sem alterar o código fonte.
-- **CMD com `sh -c`**: Permite que o comando do container interprete variáveis de ambiente e comandos compostos via shell.
-
----
-
-## 5. Alterando o Valor da Variável (Opcional)
-
-Se desejar passar o valor da variável em tempo de execução (sobrescrevendo o valor do Dockerfile):
-
-```bash
-docker run -e MEU_NOME=OutroNome meunome
-```
-
-Saída:
-
-```
-OutroNome
-```
-
----
-
-## Resumo
-
-Com esses passos, você criou e executou um container Docker que utiliza uma variável de ambiente para exibir um valor personalizado ao ser iniciado. Isso é útil para configurar containers de maneira flexível e padronizada.
-
----
-
-## Exercício 6 – Multi-Stage Build com Go (GS Ping)
+## Exercício 6
 
 ### Objetivo
 
@@ -636,7 +579,7 @@ A aplicação estará acessível na porta 8080.
 
 ---
 
-## Exercício 7 – Docker Compose para Stack Fullstack (React, Express, MongoDB)
+## Exercício 7
 
 ### Objetivo
 
@@ -774,7 +717,7 @@ CMD ["npm", "run", "dev"]
 
 ---
 
-## Exercício 8 – PostgreSQL e pgAdmin com Docker Compose
+## Exercício 8
 
 ### Objetivo
 
@@ -901,7 +844,7 @@ A conexão foi realizada com sucesso, confirmando que o banco de dados estava op
 
 ---
 
-## Exercício 9 – Landing Page Estática com Nginx
+## Exercício 9
 
 ### Objetivo
 
@@ -982,7 +925,7 @@ Landing page baseada em [Material Kit by Creative Tim](https://www.creative-tim.
 
 ---
 
-## Exercício 10 – Rodando como Usuário Não-Root no Node.js
+## Exercício 10
 
 ### Objetivo
 
