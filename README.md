@@ -1003,17 +1003,13 @@ Arquivo responsável por criar a imagem Docker com Node.js rodando como usuário
 ```Dockerfile
 FROM node:20-alpine
 
-# Cria usuário e grupo sem privilégios
 RUN adduser -D appuser
 
-# Cria diretório de trabalho e copia a aplicação
 WORKDIR /app
 COPY app.js .
 
-# Altera permissões do diretório para o usuário criado
 RUN chown -R appuser:appuser /app
 
-# Define usuário não-root como padrão
 USER appuser
 
 EXPOSE 3000
@@ -1076,3 +1072,201 @@ CMD ["node", "app.js"]
 
 - É uma boa prática sempre rodar aplicações em containers Docker utilizando usuários não-root para reduzir riscos de segurança.
 - O mesmo conceito pode ser aplicado a outros tipos de aplicação (Python, Go, etc.), bastando ajustar o Dockerfile conforme necessário.
+
+---
+
+## Exercício 11 – Análise de Vulnerabilidades com Trivy
+
+### Objetivo
+
+Rodar o Trivy em uma imagem pública Docker (`node:16`) para identificar vulnerabilidades de severidade HIGH ou CRITICAL, anotar os pacotes afetados e sugerir ações corretivas.
+
+---
+
+### Passos executados
+
+#### 1. Instalação do Trivy
+
+```bash
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+```
+
+#### 2. Análise da imagem
+
+```bash
+trivy image node:16 > resultado_trivy.txt
+```
+
+---
+
+### Vulnerabilidades encontradas (HIGH e CRITICAL)
+
+| Pacote                | Vulnerabilidade | Severidade | Versão instalada        | Versão corrigida       | Observação/Sugestão                            |
+| --------------------- | --------------- | ---------- | ----------------------- | ---------------------- | ---------------------------------------------- |
+| git                   | CVE-2024-32002  | CRITICAL   | 1:2.20.1-2+deb10u8      | 1:2.20.1-2+deb10u9     | Atualizar imagem base para corrigir.           |
+| krb5-multidev         | CVE-2024-37371  | CRITICAL   | 1.17-3+deb10u5          |                        | Atualizar imagem base para corrigir.           |
+| libdb5.3              | CVE-2019-8457   | CRITICAL   | 5.3.28+dfsg1-0.5        |                        | Não corrigido: considerar atualização da base. |
+| libexpat1             | CVE-2024-45491  | CRITICAL   | 2.2.6-2+deb10u6         |                        | Atualizar imagem base para corrigir.           |
+| libgssapi-krb5-2      | CVE-2024-37371  | CRITICAL   | 1.17-3+deb10u5          |                        | Atualizar imagem base para corrigir.           |
+| libpython2.7-minimal  | CVE-2022-48565  | CRITICAL   | 2.7.16-2+deb10u2        | 2.7.16-2+deb10u3       | Atualizar imagem base para corrigir.           |
+| python3.7-minimal     | CVE-2022-48565  | CRITICAL   | 3.7.3-2+deb10u5         | 3.7.3-2+deb10u6        | Atualizar imagem base para corrigir.           |
+| wget                  | CVE-2024-38428  | CRITICAL   | 1.20.1-1.1              |                        | Fixa futura, acompanhar upstream.              |
+| zlib1g                | CVE-2023-45853  | CRITICAL   | 1:1.2.11.dfsg-1+deb10u2 |                        | Não corrigido: considerar atualização da base. |
+| curl                  | CVE-2023-27534  | HIGH       | 7.64.0-4+deb10u6        | 7.64.0-4+deb10u9       | Atualizar imagem base para corrigir.           |
+| openssl               | CVE-2024-12797  | HIGH       | 1.1.1n-0+deb10u6        |                        | Atualizar imagem base para corrigir.           |
+| ncurses-base          | CVE-2021-39537  | HIGH       | 6.1+20181013-2+deb10u3  | 6.1+20181013-2+deb10u5 | Atualizar imagem base para corrigir.           |
+| libwebp-dev           | CVE-2023-4863   | HIGH       | 0.6.1-2+deb10u2         | 0.6.1-2+deb10u3        | Atualizar imagem base para corrigir.           |
+| ip (package.json)     | CVE-2024-29415  | HIGH       | 2.0.0                   |                        | Atualizar dependência no projeto (npm).        |
+| semver (package.json) | CVE-2022-25883  | HIGH       | 7.3.7                   | 7.5.2, 6.3.1, 5.7.2    | Atualizar dependência no projeto (npm).        |
+| python2.7             | CVE-2022-48565  | CRITICAL   | 2.7.16-2+deb10u2        | 2.7.16-2+deb10u3       | Atualizar imagem base para corrigir.           |
+
+_(A lista acima é um recorte dos principais exemplos, conforme saída do Trivy. Para o relatório completo, consulte `resultado_trivy.txt`.)_
+
+---
+
+### Ações recomendadas
+
+- **Atualizar a imagem base:**  
+  Muitas vulnerabilidades são corrigidas em versões mais recentes da imagem (`node:18`, `node:20`, ou variantes `-bullseye`, `-alpine`).  
+  Exemplo:
+  ```dockerfile
+  FROM node:20
+  ```
+- **Atualizar dependências do projeto:**  
+  No seu `package.json`, atualize bibliotecas como `ip` e `semver` para versões corrigidas:
+  ```bash
+  npm install ip@latest semver@latest
+  ```
+- **Reconstruir a imagem:**  
+  Sempre faça o rebuild da imagem após atualizar a base e dependências.
+
+- **Evitar imagens obsoletas:**  
+  O próprio Trivy alerta que o Debian 10 não recebe mais updates de segurança. Prefira imagens com suporte ativo.
+
+- **Repetir escaneamento periodicamente:**  
+  Implemente o Trivy no pipeline de CI/CD para monitoramento contínuo.
+
+---
+
+### Observações
+
+- Algumas vulnerabilidades podem não afetar diretamente seu projeto, mas manter a imagem e dependências atualizadas reduz riscos.
+- Consulte detalhes das CVEs em https://cve.mitre.org/ ou https://nvd.nist.gov/.
+- Se dependências não forem essenciais, remova-as para reduzir a superfície de ataque.
+
+---
+
+## Exercício 12 – Melhoria de Dockerfile: Imagem Segura e Enxuta
+
+### Objetivo
+
+A partir de um Dockerfile vulnerável e com más práticas, aplicar melhorias para construir uma imagem Docker mais segura, enxuta e adequada para produção.
+
+---
+
+### Dockerfile vulnerável original
+
+```dockerfile
+FROM python:3.9
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]
+```
+
+#### Problemas identificados
+
+- **Imagem base genérica e grande**: Inclui bibliotecas e ferramentas desnecessárias.
+- **Usuário root por padrão**: Aumenta o risco de segurança.
+- **Dependências desatualizadas**: `flask==1.1.1` possui vulnerabilidades conhecidas.
+- **Build pouco eficiente**: A ordem dos comandos prejudica o cache.
+- **COPY . .** pode trazer arquivos desnecessários (usar `.dockerignore`).
+- **Sem definição de variáveis de ambiente e porta exposta**.
+
+---
+
+### Melhorias aplicadas
+
+- Troca para imagem base menor (`python:3.9-slim`).
+- Atualização da dependência Flask para uma versão segura (`flask==2.3.3`).
+- Criação de usuário não-root e execução da aplicação sem privilégios elevados.
+- Uso de `pip install --no-cache-dir` para evitar arquivos temporários.
+- Separação dos comandos de cópia para melhor aproveitamento de cache.
+- Adição de variáveis de ambiente relevantes.
+- Adição de arquivo `.dockerignore` para evitar copiar arquivos desnecessários.
+- Exposição explícita da porta utilizada pelo Flask.
+
+---
+
+### Dockerfile melhorado
+
+```dockerfile
+FROM python:3.9-slim
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y gcc \
+    && adduser --disabled-password --gecos '' appuser \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 5000
+
+ENV FLASK_ENV=production
+
+CMD ["python", "app.py"]
+```
+
+---
+
+### requirements.txt atualizado
+
+```
+flask==2.3.3
+```
+
+---
+
+### .dockerignore recomendado
+
+```
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+venv
+build
+dist
+*.egg-info
+Dockerfile
+resultado_trivy.txt
+```
+
+---
+
+### Resumo das melhorias
+
+- Imagem menor e com menos dependências vulneráveis.
+- Execução da aplicação como usuário não-root.
+- Dependência do Flask atualizada para uma versão segura.
+- Build da imagem mais eficiente.
+- Menos arquivos desnecessários no contexto da imagem.
+- Pronta para produção de forma mais segura.
+
+---
