@@ -22,7 +22,7 @@ RUN chown -R appuser:appuser /app
 
 USER appuser
 
-EXPOSE 5000
+EXPOSE 5001
 
 ENV FLASK_ENV=production
 

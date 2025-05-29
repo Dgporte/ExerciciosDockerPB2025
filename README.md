@@ -4,7 +4,25 @@ Esta lista de exercícios propõe desafios práticos para aprender e reforçar c
 
 ---
 
-## Exercício 1
+## Índice
+
+- [Exercício 1 – Olá, Docker! com Alpine](#exercício-1--olá-docker-com-alpine)
+- [Exercício 2 – Servindo Página HTML com Nginx no Ubuntu](#exercício-2--servindo-página-html-com-nginx-no-ubuntu)
+- [Exercício 3 – Terminal Interativo e Instalação de Pacotes](#exercício-3--terminal-interativo-e-instalação-de-pacotes)
+- [Exercício 4 – Persistência de Dados com MySQL e Volumes](#exercício-4--persistência-de-dados-com-mysql-e-volumes)
+- [Exercício 5 – Variáveis de Ambiente no Container](#exercício-5--variáveis-de-ambiente-no-container)
+- [Exercício 6 – Multi-Stage Build com Go (GS Ping)](#exercício-6--multi-stage-build-com-go-gs-ping)
+- [Exercício 7 – Docker Compose para Stack Fullstack (React, Express, MongoDB)](#exercício-7--docker-compose-para-stack-fullstack-react-express-mongodb)
+- [Exercício 8 – PostgreSQL e pgAdmin com Docker Compose](#exercício-8--postgresql-e-pgadmin-com-docker-compose)
+- [Exercício 9 – Landing Page Estática com Nginx](#exercício-9--landing-page-estática-com-nginx)
+- [Exercício 10 – Rodando como Usuário Não-Root no Node.js](#exercício-10--rodando-como-usuário-não-root-no-nodejs)
+- [Exercício 11 – Análise de Vulnerabilidades com Trivy](#exercício-11--análise-de-vulnerabilidades-com-trivy)
+- [Exercício 12 – Melhoria de Dockerfile: Imagem Segura e Enxuta](#exercício-12--melhoria-de-dockerfile-imagem-segura-e-enxuta)
+- [Exercício 13 – Publicando Imagem Python no Docker Hub](#exercício-13--publicando-imagem-python-no-docker-hub)
+
+---
+
+## Exercício 1 – Olá, Docker! com Alpine
 
 ### Objetivo
 
@@ -18,7 +36,7 @@ Esta lista de exercícios propõe desafios práticos para aprender e reforçar c
 
 ### O que foi criado
 
-### 1. Dockerfile
+#### 1. Dockerfile
 
 Arquivo que define a imagem Docker personalizada:
 
@@ -32,7 +50,7 @@ CMD echo "Olá, Docker!"
 
 ---
 
-### 2. Construção da imagem
+#### 2. Construção da imagem
 
 Para criar a imagem, execute o comando:
 
@@ -45,7 +63,7 @@ docker build -t meu-echo .
 
 ---
 
-### 3. Execução do container
+#### 3. Execução do container
 
 Para criar e executar um container a partir da imagem:
 
@@ -65,7 +83,7 @@ Olá, Docker!
 
 ---
 
-### 4. Reiniciar o container
+#### 4. Reiniciar o container
 
 Para executar o container novamente, use:
 
@@ -77,7 +95,7 @@ Isso reexecuta o container, imprimindo a mensagem outra vez.
 
 ---
 
-### 5. Verificar logs do container
+#### 5. Verificar logs do container
 
 Para ver as mensagens impressas pelo container:
 
@@ -109,7 +127,7 @@ Os logs acumulam todas as saídas das execuções anteriores do container.
 
 ---
 
-## Exercício 2
+## Exercício 2 – Servindo Página HTML com Nginx no Ubuntu
 
 ### Objetivo
 
@@ -240,7 +258,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 3
+## Exercício 3 – Terminal Interativo e Instalação de Pacotes
 
 ### Objetivo
 
@@ -282,7 +300,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 4
+## Exercício 4 – Persistência de Dados com MySQL e Volumes
 
 ### Objetivo
 
@@ -432,7 +450,7 @@ docker-compose up -d
 
 ---
 
-## Exercício 5
+## Exercício 5 – Variáveis de Ambiente no Container
 
 ### Objetivo
 
@@ -521,7 +539,7 @@ Com esses passos, você criou e executou um container Docker que utiliza uma var
 
 ---
 
-## Exercício 6
+## Exercício 6 – Multi-Stage Build com Go (GS Ping)
 
 ### Objetivo
 
@@ -618,7 +636,7 @@ A aplicação estará acessível na porta 8080.
 
 ---
 
-## Exercício 7
+## Exercício 7 – Docker Compose para Stack Fullstack (React, Express, MongoDB)
 
 ### Objetivo
 
@@ -756,7 +774,7 @@ CMD ["npm", "run", "dev"]
 
 ---
 
-## Exercício 8
+## Exercício 8 – PostgreSQL e pgAdmin com Docker Compose
 
 ### Objetivo
 
@@ -883,7 +901,7 @@ A conexão foi realizada com sucesso, confirmando que o banco de dados estava op
 
 ---
 
-## Exercício 9
+## Exercício 9 – Landing Page Estática com Nginx
 
 ### Objetivo
 
@@ -964,7 +982,7 @@ Landing page baseada em [Material Kit by Creative Tim](https://www.creative-tim.
 
 ---
 
-## Exercício 10
+## Exercício 10 – Rodando como Usuário Não-Root no Node.js
 
 ### Objetivo
 
@@ -1180,7 +1198,7 @@ CMD ["python", "app.py"]
 - **Imagem base genérica e grande**: Inclui bibliotecas e ferramentas desnecessárias.
 - **Usuário root por padrão**: Aumenta o risco de segurança.
 - **Dependências desatualizadas**: `flask==1.1.1` possui vulnerabilidades conhecidas.
-- **Build pouco eficiente**: A ordem dos comandos prejudica o cache.
+- **Build pouco eficiente**: A ordem dos comandos prejudica o aproveitamento do cache do Docker.
 - **COPY . .** pode trazer arquivos desnecessários (usar `.dockerignore`).
 - **Sem definição de variáveis de ambiente e porta exposta**.
 
@@ -1260,6 +1278,23 @@ resultado_trivy.txt
 
 ---
 
+### Exemplo de app.py
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+```
+
+---
+
 ### Resumo das melhorias
 
 - Imagem menor e com menos dependências vulneráveis.
@@ -1268,5 +1303,159 @@ resultado_trivy.txt
 - Build da imagem mais eficiente.
 - Menos arquivos desnecessários no contexto da imagem.
 - Pronta para produção de forma mais segura.
+
+---
+
+## Exercício 13 – Publicando Imagem Python no Docker Hub
+
+### Objetivo
+
+- Criar um `Dockerfile` utilizando a imagem base `python:3.11-slim`.
+- Copiar um script Python local (`app.py`) para a imagem.
+- Executar o script com `CMD`, imprimindo a data e hora atual.
+- Publicar a imagem no Docker Hub, seguindo o padrão `seu-usuario/nome-da-imagem:tag`.
+
+---
+
+### O que foi criado
+
+#### 1. app.py
+
+Script Python que imprime a data e hora atual:
+
+```python
+from datetime import datetime
+
+print("Data e hora atual:", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+```
+
+---
+
+#### 2. Dockerfile
+
+Arquivo responsável por construir a imagem Docker baseada no Python 3.11-slim e executar o script:
+
+```Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY app.py .
+
+CMD ["python", "app.py"]
+```
+
+---
+
+### Passos para construir e publicar a imagem
+
+#### a. Crie uma conta no Docker Hub
+
+Acesse [https://hub.docker.com/](https://hub.docker.com/) e crie sua conta gratuitamente.
+
+---
+
+#### b. Faça login pelo terminal
+
+```bash
+docker login
+```
+
+Informe seu usuário e senha do Docker Hub quando solicitado.
+
+---
+
+#### c. Build e tag da imagem
+
+1. **Build da imagem local:**
+
+   ```bash
+   docker build -t datapython .
+   ```
+
+2. **Tag para o Docker Hub (substitua `seu-usuario` pelo seu usuário do Docker Hub):**
+
+   ```bash
+   docker tag datapython seu-usuario/datapython:v1
+   ```
+
+   Exemplo real:
+
+   ```bash
+   docker tag datapython dgporte/datapython:v1
+   ```
+
+---
+
+#### d. Push da imagem para o Docker Hub
+
+```bash
+docker push seu-usuario/datapython:v1
+```
+
+Exemplo real:
+
+```bash
+docker push dgporte/datapython:v1
+```
+
+Após o push, a imagem estará disponível publicamente no seu repositório do Docker Hub.
+
+---
+
+#### e. Testando a imagem publicada (opcional)
+
+Qualquer usuário pode baixar e executar sua imagem publicada:
+
+```bash
+docker pull seu-usuario/datapython:v1
+docker run seu-usuario/datapython:v1
+```
+
+Saída esperada (exemplo):
+
+```
+Data e hora atual: 2025-05-29 16:52:11
+```
+
+---
+
+### Resumo dos principais comandos
+
+```bash
+# Build local
+docker build -t datapython .
+
+# Tag para Docker Hub
+docker tag datapython seu-usuario/datapython:v1
+
+# Login no Docker Hub
+docker login
+
+# Push para o Docker Hub
+docker push seu-usuario/datapython:v1
+
+# Testar a imagem publicada
+docker run seu-usuario/datapython:v1
+```
+
+---
+
+### Conceitos praticados
+
+- **Imagens base oficiais:** Uso de imagens enxutas do Python.
+- **CMD:** Define o comando padrão ao iniciar o container.
+- **Tag de versão:** Padronização do nome da imagem para facilitar publicação e versionamento.
+- **Publicação:** Compartilhamento de imagens no Docker Hub.
+- **Reutilização:** Qualquer pessoa pode baixar e rodar sua imagem.
+
+---
+
+### Observações finais
+
+- Lembre-se de sempre usar o padrão `seu-usuario/nome-da-imagem:tag` para publicar no Docker Hub.
+- O push só é possível se você estiver autenticado e usar seu usuário corretamente.
+- Certifique-se de não expor arquivos sensíveis ao copiar arquivos para a imagem Docker (use `.dockerignore` se necessário).
+- Sua imagem ficará pública por padrão em conta gratuita.
 
 ---
