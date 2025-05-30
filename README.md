@@ -490,7 +490,7 @@ docker-compose up -d
 
 ---
 
-## Exercício 5 – Variáveis de Ambiente no Container – Variáveis de Ambiente no Container
+## Exercício 5 – Variáveis de Ambiente no Container
 
 ### Objetivo
 
