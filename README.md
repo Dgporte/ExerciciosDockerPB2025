@@ -6,23 +6,23 @@ Esta lista de exercícios propõe desafios práticos para aprender e reforçar c
 
 ## Índice
 
-- [Exercício 1](#exercício-1)
-- [Exercício 2](#exercício-2)
-- [Exercício 3](#exercício-3)
-- [Exercício 4](#exercício-4)
-- [Exercício 5](#exercício-5)
-- [Exercício 6](#exercício-6)
-- [Exercício 7](#exercício-7)
-- [Exercício 8](#exercício-8)
-- [Exercício 9](#exercício-9)
-- [Exercício 10](#exercício-10)
+- [Exercício 1 – Imagem Alpine imprimindo mensagem](#exercício-1--imagem-alpine-imprimindo-mensagem)
+- [Exercício 2 – Nginx servindo página HTML customizada](#exercício-2--nginx-servindo-página-html-customizada)
+- [Exercício 3 – Container Ubuntu interativo e instalação do curl](#exercício-3--container-ubuntu-interativo-e-instalação-do-curl)
+- [Exercício 4 – MySQL com volume nomeado e persistência de dados](#exercício-4--mysql-com-volume-nomeado-e-persistência-de-dados)
+- [Exercício 5 – Variáveis de Ambiente no Container](#exercício-5--variáveis-de-ambiente-no-container)
+- [Exercício 6 – Multi-stage build para aplicação Go (GS Ping)](#exercício-6--multi-stage-build-para-aplicação-go-gs-ping)
+- [Exercício 7 – Docker Compose: React + Express + MongoDB](#exercício-7--docker-compose-react--express--mongodb)
+- [Exercício 8 – Docker Compose: PostgreSQL + pgAdmin](#exercício-8--docker-compose-postgresql--pgadmin)
+- [Exercício 9 – Landing page estática com Nginx](#exercício-9--landing-page-estática-com-nginx)
+- [Exercício 10 – Container Node.js rodando como usuário não-root](#exercício-10--container-nodejs-rodando-como-usuário-não-root)
 - [Exercício 11 – Análise de Vulnerabilidades com Trivy](#exercício-11--análise-de-vulnerabilidades-com-trivy)
 - [Exercício 12 – Melhoria de Dockerfile: Imagem Segura e Enxuta](#exercício-12--melhoria-de-dockerfile-imagem-segura-e-enxuta)
 - [Exercício 13 – Publicando Imagem Python no Docker Hub](#exercício-13--publicando-imagem-python-no-docker-hub)
 
 ---
 
-## Exercício 1
+## Exercício 1 – Imagem Alpine imprimindo mensagem
 
 ### Objetivo
 
@@ -127,7 +127,7 @@ Os logs acumulam todas as saídas das execuções anteriores do container.
 
 ---
 
-## Exercício 2
+## Exercício 2 – Nginx servindo página HTML customizada
 
 ### Objetivo
 
@@ -220,15 +220,55 @@ docker build -t siteteste .
 
 #### 4. Execução do container
 
-Para rodar o container e expor a porta 80:
+Para executar o container e servir a página HTML personalizada via Nginx, rode o seguinte comando:
 
 ```bash
-docker run --name siteteste -p 80:80 -d siteteste
+docker run --name siteteste -p 80:80 -v $(pwd)/index.html:/var/www/html/index.html -d siteteste
 ```
 
-- `--name siteteste`: nome do container.
+- `--name siteteste`: define o nome do container.
 - `-p 80:80`: mapeia a porta 80 do host para a porta 80 do container.
-- `-d`: executa em modo "detached" (em segundo plano).
+- `-v $(pwd)/index.html:/var/www/html/index.html`: monta o arquivo `index.html` do diretório atual diretamente na pasta do Nginx dentro do container, permitindo atualizar o HTML localmente e refletir imediatamente no container.
+- `-d`: executa o container em modo "detached" (segundo plano).
+
+Assim, qualquer alteração feita no arquivo `index.html` será refletida imediatamente quando você atualizar o navegador, sem necessidade de reconstruir a imagem Docker.
+
+---
+
+##### Como visualizar o volume montado no container
+
+Para verificar se o volume está realmente montado no container, utilize o comando abaixo:
+
+```bash
+docker inspect siteteste
+```
+
+Procure pela seção `"Mounts"` na saída. Você verá algo assim:
+
+```json
+"Mounts": [
+    {
+        "Type": "bind",
+        "Source": "/caminho/do/seu/projeto/index.html",
+        "Destination": "/var/www/html/index.html",
+        "Mode": "",
+        "RW": true,
+        "Propagation": "rprivate"
+    }
+]
+```
+
+Se quiser ver só o caminho de origem e destino dos volumes de forma resumida, use:
+
+```bash
+docker inspect --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' siteteste
+```
+
+Exemplo de saída:
+
+```
+/mnt/d/ExerciciosDockerPB2025/Exercício2/index.html -> /var/www/html/index.html
+```
 
 ---
 
@@ -258,7 +298,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 3
+## Exercício 3 – Container Ubuntu interativo e instalação do curl
 
 ### Objetivo
 
@@ -300,7 +340,7 @@ Você verá sua página HTML personalizada servida via Nginx dentro do seu conta
 
 ---
 
-## Exercício 4
+## Exercício 4 – MySQL com volume nomeado e persistência de dados
 
 ### Objetivo
 
@@ -450,7 +490,7 @@ docker-compose up -d
 
 ---
 
-## Exercício 5 – Variáveis de Ambiente no Container
+## Exercício 5 – Variáveis de Ambiente no Container – Variáveis de Ambiente no Container
 
 ### Objetivo
 
@@ -482,7 +522,7 @@ SeuNome
 
 ---
 
-## Exercício 6
+## Exercício 6 – Multi-stage build para aplicação Go (GS Ping)
 
 ### Objetivo
 
@@ -579,7 +619,7 @@ A aplicação estará acessível na porta 8080.
 
 ---
 
-## Exercício 7
+## Exercício 7 – Docker Compose: React + Express + MongoDB
 
 ### Objetivo
 
@@ -717,7 +757,7 @@ CMD ["npm", "run", "dev"]
 
 ---
 
-## Exercício 8
+## Exercício 8 – Docker Compose: PostgreSQL + pgAdmin
 
 ### Objetivo
 
@@ -844,7 +884,7 @@ A conexão foi realizada com sucesso, confirmando que o banco de dados estava op
 
 ---
 
-## Exercício 9
+## Exercício 9 – Landing page estática com Nginx
 
 ### Objetivo
 
@@ -925,7 +965,7 @@ Landing page baseada em [Material Kit by Creative Tim](https://www.creative-tim.
 
 ---
 
-## Exercício 10
+## Exercício 10 – Container Node.js rodando como usuário não-root
 
 ### Objetivo
 
